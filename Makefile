@@ -117,6 +117,39 @@ install-air:
 	go install github.com/cosmtrek/air@latest
 	@echo "air安装完成"
 
+# 压力测试相关命令
+.PHONY: stress-test
+stress-test:
+	@echo "运行压力测试..."
+	@echo "请提供API密钥: make stress-test API_KEY=your_api_key_here"
+	@if [ -z "$(API_KEY)" ]; then \
+		echo "错误: 请提供API密钥"; \
+		echo "用法: make stress-test API_KEY=your_api_key_here"; \
+		exit 1; \
+	fi
+	@echo "使用API密钥: $(shell echo $(API_KEY) | cut -c1-4)***"
+	go run $(MAIN_FILE) -key $(API_KEY)
+
+.PHONY: stress-test-custom
+stress-test-custom:
+	@echo "运行自定义压力测试..."
+	@echo "请提供API密钥: make stress-test-custom API_KEY=your_api_key_here CONCURRENT=20 REQUESTS=1000"
+	@if [ -z "$(API_KEY)" ]; then \
+		echo "错误: 请提供API密钥"; \
+		echo "用法: make stress-test-custom API_KEY=your_api_key_here CONCURRENT=20 REQUESTS=1000"; \
+		exit 1; \
+	fi
+	@echo "使用API密钥: $(shell echo $(API_KEY) | cut -c1-4)***"
+	@echo "并发数: $(or $(CONCURRENT),10)"
+	@echo "请求数: $(or $(REQUESTS),100)"
+	go run $(MAIN_FILE) -key $(API_KEY) -concurrent $(or $(CONCURRENT),10) -requests $(or $(REQUESTS),100)
+
+
+.PHONY: stress-test-help
+stress-test-help:
+	@echo "显示压力测试帮助信息..."
+	go run $(MAIN_FILE) -help
+
 # 显示帮助信息
 .PHONY: help
 help:
@@ -135,4 +168,11 @@ help:
 	@echo "  install-tools  - 安装开发工具"
 	@echo "  dev            - 开发模式（热重载）"
 	@echo "  install-air    - 安装air热重载工具"
+	@echo ""
+	@echo "压力测试命令:"
+	@echo "  stress-test        - 运行基本压力测试 (自托管端点, 需要API_KEY)"
+	@echo "  stress-test-custom - 运行自定义压力测试 (需要API_KEY, 可选CONCURRENT, REQUESTS)"
+	@echo "  stress-test-help   - 显示压力测试帮助信息"
+	@echo ""
 	@echo "  help           - 显示此帮助信息"
+
